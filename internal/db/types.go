@@ -2,17 +2,30 @@ package db
 
 type DB interface {
 	GetName() string
-	AddHeader(header string)
+	GetKeyHeader() string
+	AddHeader(header HeaderI)
 	RemoveHeader(header string) error
-	AddRow(row map[string]string) error
-	GetRows() []map[string]string
+	AddRow(row RowI) error
+	GetRows() []RowI
+	AddValueToHeader(value string, header string, key string) error
+	GetRowFromKeyHeader(value string) RowI
+	GetRowsFromHeaderAndValue(header string, value string) []RowI
 }
 
 type DBImpl struct {
 	Name      string
 	KeyHeader string
-	Headers   map[string]struct{}
-	Rows
+	Headers   map[HeaderI]struct{}
+	Rows      RowsI
+}
+
+type RowsI interface {
+	AddRow(row RowI) error
+	DeleteRow(row RowI)
+	RemoveHeader(header string)
+	AddValueToRowWithKeyHeader(value string, header string, key string)
+	GetRowFromKeyHeader(keyHeaderValue string) RowI
+	GetRowsFromHeaderAndValue(header string, value string) []RowI
 }
 
 type Rows struct {
@@ -22,10 +35,12 @@ type Rows struct {
 type RowI interface {
 	GetKeyHeaderAndValue() (HeaderI, ValueI)
 	GetValueFromHeader(header string) ValueI
+	GetRowMap() map[HeaderI]ValueI
 	HeaderExists(header string) bool
 	KeyHeaderValueEqual(value string) bool
 	AddHeaderWithValue(header string, keyHeader bool, t Type, value string)
 	RemoveHeader(header string)
+	UpdateHeaderValue(header string, value string)
 }
 
 type Row struct {
@@ -41,6 +56,7 @@ const (
 
 type HeaderI interface {
 	GetName() string
+	GetType() Type
 	IsString() bool
 	IsNumber() bool
 	IsKeyHeader() bool
@@ -54,6 +70,7 @@ type Header struct {
 
 type ValueI interface {
 	GetValue() string
+	SetValue(value string)
 }
 
 type Value struct {

@@ -13,8 +13,7 @@ func (r *Rows) AddRow(row RowI) error {
 	h, v := row.GetKeyHeaderAndValue()
 	for _, ro := range r.Items {
 		if ro.KeyHeaderValueEqual(v.GetValue()) {
-			err := fmt.Sprintf(keyHeaderValueExistsError, h.GetName(), v.GetValue())
-			return errors.New(err)
+			return errors.New(fmt.Sprintf(keyHeaderValueExistsError, h.GetName(), v.GetValue()))
 		}
 	}
 
@@ -37,4 +36,36 @@ func (r *Rows) RemoveHeader(header string) {
 	for _, row := range r.Items {
 		row.RemoveHeader(header)
 	}
+}
+
+func (r *Rows) AddValueToRowWithKeyHeader(value string, header string, key string) {
+	for _, row := range r.Items {
+		_, v := row.GetKeyHeaderAndValue()
+		if v.GetValue() == key {
+			row.UpdateHeaderValue(header, value)
+			break
+		}
+	}
+}
+
+func (r *Rows) GetRowFromKeyHeader(keyHeaderValue string) RowI {
+	for _, row := range r.Items {
+		_, v := row.GetKeyHeaderAndValue()
+		if v.GetValue() == keyHeaderValue {
+			return row
+		}
+	}
+
+	return nil
+}
+
+func (r *Rows) GetRowsFromHeaderAndValue(header string, value string) []RowI {
+	rows := make([]RowI, 0)
+	for _, row := range r.Items {
+		if row.GetValueFromHeader(header).GetValue() == value {
+			rows = append(rows, row)
+		}
+	}
+
+	return rows
 }
