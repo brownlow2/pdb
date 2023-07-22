@@ -20,6 +20,10 @@ func (r *Row) GetValueFromHeader(header string) ValueI {
 	return nil
 }
 
+func (r *Row) GetRowMap() map[HeaderI]ValueI {
+	return r.RowMap
+}
+
 func (r *Row) HeaderExists(header string) bool {
 	for h := range r.RowMap {
 		if h.GetName() == header {
@@ -55,6 +59,15 @@ func (r *Row) RemoveHeader(header string) {
 	for h, v := range r.RowMap {
 		if h.GetName() != header {
 			newRowMap[h] = v
+		}
+	}
+}
+
+func (r *Row) UpdateHeaderValue(header string, value string) {
+	for h := range r.RowMap {
+		if h.GetName() == header {
+			r.RowMap[h].SetValue(value)
+			break
 		}
 	}
 }
