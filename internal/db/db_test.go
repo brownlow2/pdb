@@ -81,42 +81,63 @@ func TestGetKeyHeader(t *testing.T) {
 	assert.Equal(t, "Test", db.GetKeyHeader())
 }
 
-/*
 func TestAddHeader(t *testing.T) {
-	db := &DBImpl{"test", "Title", map[string]struct{}{}, Rows{}}
-	db.AddHeader("header1")
-	h := map[string]struct{}{"header1": struct{}{}}
-	assert.True(t, reflect.DeepEqual(h, db.Headers))
+	rows := []RowI{&Row{map[HeaderI]ValueI{}}}
+	db := &DBImpl{"test", "Test", map[HeaderI]struct{}{}, &Rows{rows}}
+	h := &Header{"Test", true, VALUE_STRING}
+	hMap := map[HeaderI]struct{}{h: struct{}{}}
+	db.AddHeader(h)
+	assert.True(t, reflect.DeepEqual(hMap, db.Headers))
 
-	db.AddHeader("header2")
-	h["header2"] = struct{}{}
-	assert.True(t, reflect.DeepEqual(h, db.Headers))
+	h2 := &Header{"Test2", false, VALUE_NUMBER}
+	hMap[h2] = struct{}{}
+	db.AddHeader(h2)
+	assert.True(t, reflect.DeepEqual(hMap, db.Headers))
 
-	db.AddHeader("header1")
-	assert.True(t, reflect.DeepEqual(h, db.Headers))
+	db.AddHeader(h)
+	assert.True(t, reflect.DeepEqual(hMap, db.Headers))
+
+	dbRow := db.GetRowFromKeyHeader("")
+	assert.Equal(t, 2, len(dbRow.GetRowMap()))
 }
 
 func TestRemoveHeader(t *testing.T) {
+	hToV := map[HeaderI]ValueI{
+		&Header{"Test", true, VALUE_STRING}:   &Value{""},
+		&Header{"Test2", false, VALUE_NUMBER}: &Value{""},
+	}
+	rows := []RowI{&Row{hToV}}
 	db := &DBImpl{
-		Name: "test",
-		Headers: map[string]struct{}{
-			"header1": struct{}{},
-			"header2": struct{}{},
+		Name:      "test",
+		KeyHeader: "Test",
+		Headers: map[HeaderI]struct{}{
+			&Header{"Test", true, VALUE_STRING}:   struct{}{},
+			&Header{"Test2", false, VALUE_NUMBER}: struct{}{},
 		},
+		Rows: &Rows{rows},
+	}
+	hMap := map[HeaderI]struct{}{
+		&Header{"Test", true, VALUE_STRING}:   struct{}{},
+		&Header{"Test2", false, VALUE_NUMBER}: struct{}{},
 	}
 
-	db.RemoveHeader("header1")
-	h := map[string]struct{}{"header2": struct{}{}}
-	assert.True(t, reflect.DeepEqual(h, db.Headers))
+	err := db.RemoveHeader("Test")
+	assert.Error(t, err)
+	assert.Equal(t, len(hMap), len(db.Headers))
 
-	db.RemoveHeader("header2")
-	h = map[string]struct{}{}
-	assert.True(t, reflect.DeepEqual(h, db.Headers))
+	hMap = map[HeaderI]struct{}{
+		&Header{"Test", true, VALUE_STRING}: struct{}{},
+	}
 
-	db.RemoveHeader("header3")
-	assert.True(t, reflect.DeepEqual(h, db.Headers))
+	err = db.RemoveHeader("Test2")
+	assert.Nil(t, err)
+	assert.Equal(t, len(hMap), len(db.Headers))
+
+	dbRow := db.GetRowFromKeyHeader("")
+	assert.Equal(t, 1, len(dbRow.GetRowMap()))
 }
 
+/*
 func TestAddRow(t *testing.T) {
 	db := &DBImpl{"Test", "Key", map[string]struct{}{}, Rows{}}
 	row := map[string]string{"test": "test"}

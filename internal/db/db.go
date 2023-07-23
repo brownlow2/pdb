@@ -36,11 +36,6 @@ func (db *DBImpl) GetKeyHeader() string {
 	return db.KeyHeader
 }
 
-/*
-Test for:
-  - If the header already exists, should see no change
-  - Add header, db.Headers should grow, rows should grow too, value should be empty
-*/
 func (db *DBImpl) AddHeader(header HeaderI) {
 	// Don't need to add if it already exists
 	if !db.headerExists(header.GetName()) {
