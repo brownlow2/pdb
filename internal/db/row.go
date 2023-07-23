@@ -27,7 +27,7 @@ func (r *Row) GetValueFromHeader(header string) (ValueI, error) {
 		}
 	}
 
-	return &Value{}, errors.New(fmt.Sprintf(headerNotExistError, header))
+	return nil, errors.New(fmt.Sprintf(headerNotExistError, header))
 }
 
 func (r *Row) GetRowMap() map[HeaderI]ValueI {

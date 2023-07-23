@@ -137,42 +137,120 @@ func TestRemoveHeader(t *testing.T) {
 	assert.Equal(t, 1, len(dbRow.GetRowMap()))
 }
 
-/*
-func TestAddRow(t *testing.T) {
-	db := &DBImpl{"Test", "Key", map[string]struct{}{}, Rows{}}
-	row := map[string]string{"test": "test"}
+func TestDBAddRow(t *testing.T) {
+	db := &DBImpl{
+		Name:      "Test",
+		KeyHeader: "Key",
+		Headers: map[HeaderI]struct{}{
+			&Header{"Key", true, VALUE_STRING}:     struct{}{},
+			&Header{"NotKey", false, VALUE_NUMBER}: struct{}{},
+		},
+		Rows: &Rows{},
+	}
+
+	row := &Row{
+		RowMap: map[HeaderI]ValueI{
+			&Header{"Key", false, VALUE_STRING}:   &Value{"key value"},
+			&Header{"NotKey", true, VALUE_NUMBER}: &Value{"not key value"},
+		},
+	}
 	err := db.AddRow(row)
 	assert.Error(t, err)
 
-	headers := map[string]struct{}{"test": struct{}{}}
-	db.Headers = headers
+	row = &Row{
+		RowMap: map[HeaderI]ValueI{
+			&Header{"Key", true, VALUE_STRING}:     &Value{""},
+			&Header{"NotKey", false, VALUE_NUMBER}: &Value{"not key value"},
+		},
+	}
+	err = db.AddRow(row)
+	assert.Error(t, err)
+
+	row = &Row{
+		RowMap: map[HeaderI]ValueI{
+			&Header{"Key", true, VALUE_STRING}:     &Value{""},
+			&Header{"NotKey", false, VALUE_NUMBER}: &Value{"not key value"},
+			&Header{"Extra", false, VALUE_STRING}:  &Value{""},
+		},
+	}
+	err = db.AddRow(row)
+	assert.Error(t, err)
+
+	row = &Row{
+		RowMap: map[HeaderI]ValueI{
+			&Header{"Key", true, VALUE_STRING}:     &Value{"new key value"},
+			&Header{"NotKey", false, VALUE_NUMBER}: &Value{"not key value"},
+		},
+	}
 	err = db.AddRow(row)
 	assert.Nil(t, err)
-	assert.True(t, reflect.DeepEqual(row, db.Rows.Items[0]))
+	assert.Equal(t, 1, len(db.GetRows()))
 }
 
-func newDBWithValues() (*DBImpl, []map[string]string) {
-	rows := Rows{
-		Items: []map[string]string{
-			{
-				"Title": "test",
-				"Value": "test",
+func TestVerifyHeaders(t *testing.T) {
+	db := &DBImpl{
+		Name:      "Test",
+		KeyHeader: "Key",
+		Headers: map[HeaderI]struct{}{
+			&Header{"Key", true, VALUE_STRING}:     struct{}{},
+			&Header{"NotKey", false, VALUE_NUMBER}: struct{}{},
+		},
+		Rows: &Rows{},
+	}
+
+	row := &Row{
+		RowMap: map[HeaderI]ValueI{
+			&Header{"Key", true, VALUE_STRING}:     &Value{"new key value"},
+			&Header{"NotKey", false, VALUE_NUMBER}: &Value{"not key value"},
+		},
+	}
+	err := db.verifyHeaders(row)
+	assert.Nil(t, err)
+
+	row = &Row{
+		RowMap: map[HeaderI]ValueI{
+			&Header{"Key", true, VALUE_STRING}:         &Value{"new key value"},
+			&Header{"NotKey", false, VALUE_NUMBER}:     &Value{"not key value"},
+			&Header{"NotPresent", false, VALUE_STRING}: &Value{"not exist"},
+		},
+	}
+	err = db.verifyHeaders(row)
+	assert.Error(t, err)
+
+	row = &Row{
+		RowMap: map[HeaderI]ValueI{
+			&Header{"Key", true, VALUE_STRING}: &Value{"new key value"},
+		},
+	}
+	err = db.verifyHeaders(row)
+	assert.Nil(t, err)
+	assert.Equal(t, 2, len(row.GetRowMap()))
+}
+
+func newDBWithValues() (*DBImpl, []RowI) {
+	rows := &Rows{
+		Items: []RowI{
+			&Row{
+				RowMap: map[HeaderI]ValueI{
+					&Header{"Title", true, VALUE_STRING}:  &Value{"test"},
+					&Header{"Value", false, VALUE_STRING}: &Value{"test2"},
+				},
 			},
 		},
 	}
 	db := &DBImpl{
 		Name:      "test",
 		KeyHeader: "Title",
-		Headers: map[string]struct{}{
-			"Title": struct{}{},
-			"Value": struct{}{},
+		Headers: map[HeaderI]struct{}{
+			&Header{"Title", true, VALUE_STRING}:  struct{}{},
+			&Header{"Value", false, VALUE_STRING}: struct{}{},
 		},
 		Rows: rows,
 	}
 	return db, rows.Items
 }
 
-func TestGetRows(t *testing.T) {
+func TestDBGetRows(t *testing.T) {
 	db, rows := newDBWithValues()
 
 	assert.True(t, reflect.DeepEqual(rows, db.GetRows()))
@@ -187,10 +265,16 @@ func TestAddValueToHeader(t *testing.T) {
 	assert.Error(t, err)
 
 	err = db.AddValueToHeader("after", "Value", "not exists")
-	assert.Error(t, err)
+	assert.Nil(t, err)
+
+	row := db.GetRowFromKeyHeader("test")
+	assert.Equal(t, 2, len(row.GetRowMap()))
+	v, err := row.GetValueFromHeader("Value")
+	assert.Nil(t, err)
+	assert.Equal(t, "after", v.GetValue())
 }
 
-func TestHeaderExists(t *testing.T) {
+func TestDBHeaderExists(t *testing.T) {
 	db, _ := newDBWithValues()
 	exists := db.headerExists("Title")
 	assert.True(t, exists)
@@ -202,38 +286,40 @@ func TestHeaderExists(t *testing.T) {
 	assert.False(t, exists)
 }
 
-func TestGetRowFromKeyHeader(t *testing.T) {
+func TestDBGetRowFromKeyHeader(t *testing.T) {
 	db, _ := newDBWithValues()
 	row := db.GetRowFromKeyHeader("test")
-	expectedRow := map[string]string{"Title": "test", "Value": "test"}
-	assert.True(t, reflect.DeepEqual(row, expectedRow))
+	v, err := row.GetValueFromHeader("Title")
+	assert.Nil(t, err)
+	assert.Equal(t, "test", v.GetValue())
+	v, err = row.GetValueFromHeader("Value")
+	assert.Nil(t, err)
+	assert.Equal(t, "test2", v.GetValue())
 
 	row = db.GetRowFromKeyHeader("fail")
-	expectedRow = map[string]string{}
-	assert.True(t, reflect.DeepEqual(row, expectedRow))
+	assert.Nil(t, row)
 }
 
-func TestGetRowsFromHeaderAndValue(t *testing.T) {
+func TestDBGetRowsFromHeaderAndValue(t *testing.T) {
 	db, _ := newDBWithValues()
-	expectedRows := []map[string]string{
-		{
-			"Title": "test",
-			"Value": "test",
-		},
-		{
-			"Title": "test2",
-			"Value": "test",
+	r := &Row{
+		RowMap: map[HeaderI]ValueI{
+			&Header{"Title", true, VALUE_STRING}:  &Value{"next"},
+			&Header{"Value", false, VALUE_STRING}: &Value{"test2"},
 		},
 	}
-	db.Rows.Items = expectedRows
-	rows := db.GetRowsFromHeaderAndValue("Value", "test")
-	assert.True(t, reflect.DeepEqual(rows, expectedRows))
+	err := db.AddRow(r)
+	assert.Nil(t, err)
 
-	rows = db.GetRowsFromHeaderAndValue("Values", "test")
-	expectedRows = make([]map[string]string, 0)
-	assert.True(t, reflect.DeepEqual(rows, expectedRows))
+	rows, err := db.GetRowsFromHeaderAndValue("Value", "test2")
+	assert.Nil(t, err)
+	assert.Equal(t, 2, len(rows))
 
-	rows = db.GetRowsFromHeaderAndValue("Value", "fail")
-	assert.True(t, reflect.DeepEqual(rows, expectedRows))
+	rows, err = db.GetRowsFromHeaderAndValue("Value", "not exist")
+	assert.Nil(t, err)
+	assert.Equal(t, 0, len(rows))
+
+	rows, err = db.GetRowsFromHeaderAndValue("Not Exist", "")
+	assert.Error(t, err)
+	assert.Nil(t, rows)
 }
-*/

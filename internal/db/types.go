@@ -29,8 +29,8 @@ type DB interface {
 	GetRowFromKeyHeader(value string) RowI
 
 	// Returns a list of the rows that have header == value
-	// Returns nil if the header doesn't exist
-	GetRowsFromHeaderAndValue(header string, value string) []RowI
+	// Returns an error if the header doesn't exist
+	GetRowsFromHeaderAndValue(header string, value string) ([]RowI, error)
 }
 
 // The implementation for DB holding the following fields:
@@ -69,7 +69,7 @@ type RowsI interface {
 
 	// Returns a list of rows that satisfy header's value == value
 	// Returns an empty list if none satisfy it
-	GetRowsFromHeaderAndValue(header string, value string) []RowI
+	GetRowsFromHeaderAndValue(header string, value string) ([]RowI, error)
 }
 
 // The implementation of Rows holding the following fields:

@@ -31,15 +31,18 @@ func TestGetKeyHeaderAndValue(t *testing.T) {
 func TestGetValueFromHeader(t *testing.T) {
 	row, _ := createRow()
 
-	v := row.GetValueFromHeader("Key")
+	v, err := row.GetValueFromHeader("Key")
+	assert.Nil(t, err)
 	assert.NotNil(t, v)
 	assert.Equal(t, "key value", v.GetValue())
 
-	v = row.GetValueFromHeader("NotKey")
+	v, err = row.GetValueFromHeader("NotKey")
+	assert.Nil(t, err)
 	assert.NotNil(t, v)
 	assert.Equal(t, "", v.GetValue())
 
-	v = row.GetValueFromHeader("NotPresent")
+	v, err = row.GetValueFromHeader("NotPresent")
+	assert.Error(t, err)
 	assert.Nil(t, v)
 }
 
@@ -72,13 +75,15 @@ func TestAddHeaderWithValue(t *testing.T) {
 	err := row.AddHeaderWithValue("New", false, VALUE_STRING, "new value")
 	assert.Nil(t, err)
 	assert.Equal(t, 3, len(row.GetRowMap()))
-	v := row.GetValueFromHeader("New")
+	v, err := row.GetValueFromHeader("New")
+	assert.Nil(t, err)
 	assert.Equal(t, "new value", v.GetValue())
 
 	err = row.AddHeaderWithValue("NewKey", true, VALUE_STRING, "new key value")
 	assert.Error(t, err)
 	assert.Equal(t, 3, len(row.GetRowMap()))
-	v = row.GetValueFromHeader("NewKey")
+	v, err = row.GetValueFromHeader("NewKey")
+	assert.Error(t, err)
 	assert.Nil(t, v)
 }
 
@@ -86,16 +91,28 @@ func TestUpdateHeaderValue(t *testing.T) {
 	row, _ := createRow()
 
 	row.UpdateHeaderValue("Key", "newer value")
-	assert.Equal(t, "newer value", row.GetValueFromHeader("Key").GetValue())
-	assert.Equal(t, "", row.GetValueFromHeader("NotKey").GetValue())
+	v, err := row.GetValueFromHeader("Key")
+	assert.Nil(t, err)
+	assert.Equal(t, "newer value", v.GetValue())
+	v, err = row.GetValueFromHeader("NotKey")
+	assert.Nil(t, err)
+	assert.Equal(t, "", v.GetValue())
 
 	row.UpdateHeaderValue("NotKey", "something")
-	assert.Equal(t, "newer value", row.GetValueFromHeader("Key").GetValue())
-	assert.Equal(t, "something", row.GetValueFromHeader("NotKey").GetValue())
+	v, err = row.GetValueFromHeader("Key")
+	assert.Nil(t, err)
+	assert.Equal(t, "newer value", v.GetValue())
+	v, err = row.GetValueFromHeader("NotKey")
+	assert.Nil(t, err)
+	assert.Equal(t, "something", v.GetValue())
 
 	row.UpdateHeaderValue("NotPresent", "shouldn't exist")
-	assert.Equal(t, "newer value", row.GetValueFromHeader("Key").GetValue())
-	assert.Equal(t, "something", row.GetValueFromHeader("NotKey").GetValue())
+	v, err = row.GetValueFromHeader("Key")
+	assert.Nil(t, err)
+	assert.Equal(t, "newer value", v.GetValue())
+	v, err = row.GetValueFromHeader("NotKey")
+	assert.Nil(t, err)
+	assert.Equal(t, "something", v.GetValue())
 	assert.Equal(t, 2, len(row.GetRowMap()))
 }
 
