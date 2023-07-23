@@ -5,21 +5,20 @@ import (
 	"fmt"
 )
 
-var (
-	keyHeaderIncorrect  = "key header '%s' incorrect, expected '%s'"
-	keyHeaderEmptyError = "key header '%s' must not be empty"
-	headerNotExistError = "header '%s' does not exist"
-)
-
 func New(name string, headers []HeaderI, keyHeader string) (*DBImpl, error) {
 	if keyHeader == "" {
-		return &DBImpl{}, errors.New("key header must not be empty")
+		return &DBImpl{}, errors.New("key header must exist and not be empty")
 	}
 
-	db := &DBImpl{name, keyHeader, map[HeaderI]struct{}{}, Rows{}}
+	db := &DBImpl{name, keyHeader, map[HeaderI]struct{}{}, &Rows{}}
 	for _, header := range headers {
 		db.AddHeader(header)
 	}
+
+	if len(headers) == 0 || !db.headerExists(keyHeader) {
+		return &DBImpl{}, errors.New(fmt.Sprintf(keyHeaderEmptyError, keyHeader))
+	}
+
 	return db, nil
 }
 
@@ -34,11 +33,10 @@ func (db *DBImpl) GetKeyHeader() string {
 func (db *DBImpl) AddHeader(header HeaderI) {
 	// Don't need to add if it already exists
 	if !db.headerExists(header.GetName()) {
-		h := &Header{header, false, t}
 		db.Headers[header] = struct{}{}
 
 		// Add the header to each of the rows in the db
-		for _, row := range db.Rows.Items {
+		for _, row := range db.Rows.GetRows() {
 			row.AddHeaderWithValue(header.GetName(), header.IsKeyHeader(), header.GetType(), "")
 		}
 	}
@@ -46,7 +44,7 @@ func (db *DBImpl) AddHeader(header HeaderI) {
 
 func (db *DBImpl) RemoveHeader(header string) error {
 	if header == db.KeyHeader {
-		return errors.New("cannot delete key header '", header, "'")
+		return errors.New(fmt.Sprintf(headerNotExistError, header))
 	}
 
 	newHeaders := make(map[HeaderI]struct{}, 0)
@@ -65,16 +63,15 @@ func (db *DBImpl) AddRow(row RowI) error {
 	// Make sure the row's key header is correct
 	h, v := row.GetKeyHeaderAndValue()
 	if h.GetName() != db.GetKeyHeader() {
-		return errors.New(keyHeaderIncorrect, h.GetName(), db.GetKeyHeader())
+		return errors.New(fmt.Sprintf(keyHeaderIncorrect, h.GetName(), db.GetKeyHeader()))
 	}
 
 	// Make sure the key header's value is not empty
 	if v.GetValue() == "" {
-		return errors.New(keyHeaderEmptyError, h.GetName())
+		return errors.New(fmt.Sprintf(keyHeaderEmptyError, h.GetName()))
 	}
 
-	// Verify that there are now extra headers in the row
-	// If there are any extra, add them to every other row with an empty value
+	// Verify that there are no extra headers in the row
 	err := db.verifyHeaders(row)
 	if err != nil {
 		return err
@@ -109,7 +106,7 @@ func (db *DBImpl) verifyHeaders(row RowI) error {
 }
 
 func (db *DBImpl) GetRows() []RowI {
-	return db.Items
+	return db.Rows.GetRows()
 }
 
 // Adds a value to a given header for a row with KeyHeader == key
@@ -136,12 +133,17 @@ func (db *DBImpl) GetRowFromKeyHeader(value string) RowI {
 	return db.Rows.GetRowFromKeyHeader(value)
 }
 
-func (db *DBImpl) GetRowsFromHeaderAndValue(header string, value string) []RowI {
+func (db *DBImpl) GetRowsFromHeaderAndValue(header string, value string) ([]RowI, error) {
 	if !db.headerExists(header) {
-		return rows
+		return nil, errors.New(fmt.Sprintf(headerNotExistError, header))
 	}
 
-	return db.Rows.GetRowsFromHeaderAndValue()
+	rows, err := db.Rows.GetRowsFromHeaderAndValue(header, value)
+	if err != nil {
+		return nil, err
+	}
+
+	return rows, nil
 }
 
 // TODO: add GetRowsFromHeaderAndValueLessThan

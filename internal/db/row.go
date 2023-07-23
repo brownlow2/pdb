@@ -1,5 +1,10 @@
 package db
 
+import (
+	"errors"
+	"fmt"
+)
+
 func (r *Row) GetKeyHeaderAndValue() (HeaderI, ValueI) {
 	for h, v := range r.RowMap {
 		if h.IsKeyHeader() {
@@ -10,14 +15,14 @@ func (r *Row) GetKeyHeaderAndValue() (HeaderI, ValueI) {
 	return nil, nil
 }
 
-func (r *Row) GetValueFromHeader(header string) ValueI {
+func (r *Row) GetValueFromHeader(header string) (ValueI, error) {
 	for h, v := range r.RowMap {
 		if h.GetName() == header {
-			return v
+			return v, nil
 		}
 	}
 
-	return nil
+	return nil, errors.New(fmt.Sprintf(headerNotExistError, header))
 }
 
 func (r *Row) GetRowMap() map[HeaderI]ValueI {
@@ -46,21 +51,34 @@ func (r *Row) KeyHeaderValueEqual(value string) bool {
 	return false
 }
 
-func (r *Row) AddHeaderWithValue(header string, keyHeader bool, t Type, value string) {
-	// TODO: update to check if a key header already exists
+func (r *Row) AddHeaderWithValue(header string, keyHeader bool, t Type, value string) error {
+	key, _ := r.GetKeyHeaderAndValue()
+	if key != nil && keyHeader {
+		return errors.New(keyHeaderAlreadyExistsError)
+	}
+
 	h := &Header{header, keyHeader, t}
 	v := &Value{value}
 	r.RowMap[h] = v
+	return nil
 }
 
-func (r *Row) RemoveHeader(header string) {
-	// Ignores if header is Key Header
+func (r *Row) RemoveHeader(header string) error {
+	// Return error if trying to delete key header
+	h, _ := r.GetKeyHeaderAndValue()
+	if h.GetName() == header {
+		return errors.New(fmt.Sprintf(deleteKeyHeaderError, h.GetName()))
+	}
+
 	newRowMap := map[HeaderI]ValueI{}
 	for h, v := range r.RowMap {
 		if h.GetName() != header {
 			newRowMap[h] = v
 		}
 	}
+	r.RowMap = newRowMap
+
+	return nil
 }
 
 func (r *Row) UpdateHeaderValue(header string, value string) {

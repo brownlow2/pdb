@@ -5,9 +5,9 @@ import (
 	"fmt"
 )
 
-var (
-	keyHeaderValueExistsError = "row with key header '%s' and value '%s' already exists"
-)
+func (r *Rows) GetRows() []RowI {
+	return r.Items
+}
 
 func (r *Rows) AddRow(row RowI) error {
 	h, v := row.GetKeyHeaderAndValue()
@@ -59,13 +59,18 @@ func (r *Rows) GetRowFromKeyHeader(keyHeaderValue string) RowI {
 	return nil
 }
 
-func (r *Rows) GetRowsFromHeaderAndValue(header string, value string) []RowI {
+func (r *Rows) GetRowsFromHeaderAndValue(header string, value string) ([]RowI, error) {
 	rows := make([]RowI, 0)
 	for _, row := range r.Items {
-		if row.GetValueFromHeader(header).GetValue() == value {
+		v, err := row.GetValueFromHeader(header)
+		if err != nil {
+			return nil, err
+		}
+
+		if v.GetValue() == value {
 			rows = append(rows, row)
 		}
 	}
 
-	return rows
+	return rows, nil
 }
