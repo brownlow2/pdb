@@ -139,10 +139,6 @@ func (db *DBImpl) GetRowFromKeyHeader(value string) RowI {
 	return db.Rows.GetRowFromKeyHeader(value)
 }
 
-/*
-Test for:
-  - Returns the correct rows from the value for given header
-*/
 func (db *DBImpl) GetRowsFromHeaderAndValue(header string, value string) ([]RowI, error) {
 	if !db.headerExists(header) {
 		return nil, errors.New(fmt.Sprintf(headerNotExistError, header))
