@@ -1,10 +1,6 @@
 package db
 
-/*
-*
-* DB is the interface for any DB implementations
-*
- */
+// DB is the interface for any DB implementations
 type DB interface {
 	// Returns the name of the DB
 	GetName() string
@@ -37,16 +33,11 @@ type DB interface {
 	GetRowsFromHeaderAndValue(header string, value string) []RowI
 }
 
-/*
-*
-* The implementation for DB holding the following fields:
-*
-* Name: The name of the DB implementation
-* KeyHeader: The KeyHeader for this DB implementation
-* Headers: The headers created for this DB implementation
-* Rows: The rows currently in the DB implementation
-*
- */
+// The implementation for DB holding the following fields:
+// Name: The name of the DB implementation
+// KeyHeader: The KeyHeader for this DB implementation
+// Headers: The headers created for this DB implementation
+// Rows: The rows currently in the DB implementation
 type DBImpl struct {
 	Name      string
 	KeyHeader string
@@ -54,11 +45,7 @@ type DBImpl struct {
 	Rows      RowsI
 }
 
-/*
-*
-* RowsI is the interface for the rows in a DB
-*
- */
+// RowsI is the interface for the rows in a DB
 type RowsI interface {
 	// Returns the rows in the DB
 	GetRows() []RowI
@@ -85,22 +72,13 @@ type RowsI interface {
 	GetRowsFromHeaderAndValue(header string, value string) []RowI
 }
 
-/*
-*
-* The implementation of Rows holding the following fields:
-*
-* Items: The list of Row instances
-*
- */
+// The implementation of Rows holding the following fields:
+// Items: The list of Row instances
 type Rows struct {
 	Items []RowI
 }
 
-/*
-*
-* RowI is the interface for a row in the Rows list
-*
- */
+// RowI is the interface for a row in the Rows list
 type RowI interface {
 	// Returns the KeyHeader instance and its Value
 	// Returns nil, nil if a KeyHeader doesn't exist
@@ -131,25 +109,15 @@ type RowI interface {
 	UpdateHeaderValue(header string, value string)
 }
 
-/*
-*
-* The implementation of a row holding the following fields:
-*
-* RowMap: The map of headers to their values
-*
- */
+// The implementation of a row holding the following fields:
+// RowMap: The map of headers to their values
 type Row struct {
 	RowMap map[HeaderI]ValueI
 }
 
-/*
-*
-* The type given to a header with the following values:
-*
-* VALUE_STRING: The header's value is a string
-* VALUE_NUMBER: The header's value is a number and can be used in LessThan/MoreThan operations
-*
- */
+// The type given to a header with the following values:
+// VALUE_STRING: The header's value is a string
+// VALUE_NUMBER: The header's value is a number and can be used in LessThan/MoreThan operations
 type Type int
 
 const (
@@ -157,11 +125,7 @@ const (
 	VALUE_NUMBER
 )
 
-/*
-*
-* HeaderI is the interface for a header in a Row or DB
-*
- */
+// HeaderI is the interface for a header in a Row or DB
 type HeaderI interface {
 	// Returns the name of the header
 	GetName() string
@@ -179,26 +143,17 @@ type HeaderI interface {
 	IsKeyHeader() bool
 }
 
-/*
-*
-* The implementation of a header holding the following fields:
-*
-* Name: The name of the header
-* KeyHeader: A bool denoted if the header is the key header in the row and DB
-* Type: The type of the header
-*
- */
+// The implementation of a header holding the following fields:
+// Name: The name of the header
+// KeyHeader: A bool denoted if the header is the key header in the row and DB
+// Type: The type of the header
 type Header struct {
 	Name      string
 	KeyHeader bool
 	Type
 }
 
-/*
-*
-* ValueI is the interface for a value in a Row or DB for a header
-*
- */
+// ValueI is the interface for a value in a Row or DB for a header
 type ValueI interface {
 	// Returns the value as a string
 	GetValue() string
@@ -207,13 +162,8 @@ type ValueI interface {
 	SetValue(value string)
 }
 
-/*
-*
-* The implementation of a value holding the following fields:
-*
-* Value: the value of the instance represented as a string
-*
- */
+// The implementation of a value holding the following fields:
+// Value: the value of the instance represented as a string
 type Value struct {
 	Value string
 }
