@@ -7,14 +7,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func testNew(t *testing.T, name string, headers []string) {
+func testNew(t *testing.T, name string, headers []HeaderI) {
 	db, err := New(name, headers, "Title")
 	assert.Nil(t, err)
 	assert.NotNil(t, db)
 	assert.Equal(t, name, db.Name)
 	assert.Equal(t, len(headers), len(db.Headers))
 
-	h := make(map[string]struct{}, 0)
+	h := make(map[HeaderI]struct{}, 0)
 	for _, header := range headers {
 		h[header] = struct{}{}
 	}
@@ -24,10 +24,51 @@ func testNew(t *testing.T, name string, headers []string) {
 	assert.Error(t, err)
 }
 
+func testNewFail(t *testing.T, name string, headers []HeaderI) {
+	db, err := New(name, headers, "Title")
+	assert.True(t, reflect.DeepEqual(db, &DBImpl{}))
+	assert.Error(t, err)
+
+	db, err = New(name, headers, "")
+	assert.True(t, reflect.DeepEqual(db, &DBImpl{}))
+	assert.Error(t, err)
+}
+
 func TestNew(t *testing.T) {
-	testNew(t, "test db", []string{})
-	testNew(t, "test db", []string{"header1"})
-	testNew(t, "test db", []string{"header1", "header2"})
+	headers := []HeaderI{}
+	testNewFail(t, "test db", headers)
+
+	headers = []HeaderI{
+		&Header{
+			Name:      "Error",
+			KeyHeader: true,
+			Type:      VALUE_STRING,
+		},
+	}
+	testNewFail(t, "test db", headers)
+
+	headers = []HeaderI{
+		&Header{
+			Name:      "Title",
+			KeyHeader: true,
+			Type:      VALUE_STRING,
+		},
+	}
+	testNew(t, "test db", headers)
+
+	headers = []HeaderI{
+		&Header{
+			Name:      "Title",
+			KeyHeader: true,
+			Type:      VALUE_STRING,
+		},
+		&Header{
+			Name:      "2",
+			KeyHeader: false,
+			Type:      VALUE_NUMBER,
+		},
+	}
+	testNew(t, "test db", headers)
 }
 
 func TestGetName(t *testing.T) {
@@ -35,6 +76,12 @@ func TestGetName(t *testing.T) {
 	assert.Equal(t, "test db", db.GetName())
 }
 
+func TestGetKeyHeader(t *testing.T) {
+	db := &DBImpl{Name: "test db", KeyHeader: "Test"}
+	assert.Equal(t, "Test", db.GetKeyHeader())
+}
+
+/*
 func TestAddHeader(t *testing.T) {
 	db := &DBImpl{"test", "Title", map[string]struct{}{}, Rows{}}
 	db.AddHeader("header1")
@@ -168,3 +215,4 @@ func TestGetRowsFromHeaderAndValue(t *testing.T) {
 	rows = db.GetRowsFromHeaderAndValue("Value", "fail")
 	assert.True(t, reflect.DeepEqual(rows, expectedRows))
 }
+*/

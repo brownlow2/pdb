@@ -20,6 +20,7 @@ type DBImpl struct {
 }
 
 type RowsI interface {
+	GetRows() []RowI
 	AddRow(row RowI) error
 	DeleteRow(row RowI)
 	RemoveHeader(header string)
