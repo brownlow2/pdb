@@ -5,10 +5,6 @@ import (
 	"fmt"
 )
 
-var (
-	keyHeaderValueExistsError = "row with key header '%s' and value '%s' already exists"
-)
-
 func (r *Rows) GetRows() []RowI {
 	return r.Items
 }

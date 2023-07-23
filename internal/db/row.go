@@ -5,11 +5,6 @@ import (
 	"fmt"
 )
 
-var (
-	keyHeaderAlreadyExistsError = "key header already exists"
-	deleteKeyHeaderError        = "cannot delete key header '%s'"
-)
-
 func (r *Row) GetKeyHeaderAndValue() (HeaderI, ValueI) {
 	for h, v := range r.RowMap {
 		if h.IsKeyHeader() {

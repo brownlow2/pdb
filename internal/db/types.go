@@ -1,5 +1,14 @@
 package db
 
+var (
+	keyHeaderIncorrect          = "key header '%s' incorrect, expected '%s'"
+	keyHeaderEmptyError         = "key header '%s' must not be empty"
+	headerNotExistError         = "header '%s' does not exist"
+	keyHeaderAlreadyExistsError = "key header already exists"
+	deleteKeyHeaderError        = "cannot delete key header '%s'"
+	keyHeaderValueExistsError   = "row with key header '%s' and value '%s' already exists"
+)
+
 // DB is the interface for any DB implementations
 type DB interface {
 	// Returns the name of the DB

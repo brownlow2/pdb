@@ -5,12 +5,6 @@ import (
 	"fmt"
 )
 
-var (
-	keyHeaderIncorrect  = "key header '%s' incorrect, expected '%s'"
-	keyHeaderEmptyError = "key header '%s' must not be empty"
-	headerNotExistError = "header '%s' does not exist"
-)
-
 func New(name string, headers []HeaderI, keyHeader string) (*DBImpl, error) {
 	if keyHeader == "" {
 		return &DBImpl{}, errors.New("key header must exist and not be empty")
