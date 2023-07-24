@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/brownlow2/pdb/internal/db"
-	"github.com/brownlow2/pdb/internal/dbmanager"
+	"github.com/brownlow2/pdb/pkg/dbmanager"
 )
 
 type template struct {
