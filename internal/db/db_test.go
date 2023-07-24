@@ -81,6 +81,42 @@ func TestGetKeyHeader(t *testing.T) {
 	assert.Equal(t, "Test", db.GetKeyHeader())
 }
 
+func TestGetHeaders(t *testing.T) {
+	hExists := func(h string, headers []HeaderI) bool {
+		for _, header := range headers {
+			if header.GetName() == h {
+				return true
+			}
+		}
+		return false
+	}
+
+	db, _ := newDBWithValues()
+	headers := db.GetHeaders()
+	assert.NotNil(t, headers)
+	assert.Equal(t, 2, len(headers))
+	assert.True(t, hExists("Title", headers))
+	assert.True(t, hExists("Value", headers))
+}
+
+func TestGetHeadersString(t *testing.T) {
+	hExists := func(h string, headers []string) bool {
+		for _, header := range headers {
+			if header == h {
+				return true
+			}
+		}
+		return false
+	}
+
+	db, _ := newDBWithValues()
+	headers := db.GetHeadersString()
+	assert.NotNil(t, headers)
+	assert.Equal(t, 2, len(headers))
+	assert.True(t, hExists("Title (K)", headers))
+	assert.True(t, hExists("Value", headers))
+}
+
 func TestAddHeader(t *testing.T) {
 	rows := []RowI{&Row{map[HeaderI]ValueI{}}}
 	db := &DBImpl{"test", "Test", map[HeaderI]struct{}{}, &Rows{rows}}
