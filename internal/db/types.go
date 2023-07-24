@@ -14,6 +14,10 @@ type DB interface {
 	// Returns the name of the DB
 	GetName() string
 
+	GetHeaders() []HeaderI
+
+	GetHeadersString() []string
+
 	// Returns the KeyHeader for the DB
 	GetKeyHeader() string
 

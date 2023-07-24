@@ -26,6 +26,28 @@ func (db *DBImpl) GetName() string {
 	return db.Name
 }
 
+func (db *DBImpl) GetHeaders() []HeaderI {
+	headers := []HeaderI{}
+	for h := range db.Headers {
+		headers = append(headers, h)
+	}
+
+	return headers
+}
+
+func (db *DBImpl) GetHeadersString() []string {
+	headersString := []string{}
+	for h := range db.Headers {
+		if h.IsKeyHeader() {
+			headersString = append(headersString, fmt.Sprintf("%s (K)", h.GetName()))
+		} else {
+			headersString = append(headersString, h.GetName())
+		}
+	}
+
+	return headersString
+}
+
 func (db *DBImpl) GetKeyHeader() string {
 	return db.KeyHeader
 }

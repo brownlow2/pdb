@@ -32,6 +32,14 @@ func (dbm *DBManagerImpl) CreateDB(name string, headers []db.HeaderI, keyHeader 
 	return nil
 }
 
+func (dbm *DBManagerImpl) RetrieveDB(name string) (db.DB, error) {
+	if !dbm.DBExists(name) {
+		return nil, errors.New(fmt.Sprintf(dbNotExistError, name))
+	}
+
+	return dbm.DBs[name], nil
+}
+
 func (dbm *DBManagerImpl) DBExists(name string) bool {
 	_, exists := dbm.DBs[name]
 	return exists
