@@ -5,7 +5,8 @@ import (
 )
 
 var (
-	dbExistsError = "database '%s' already exists"
+	dbExistsError   = "database '%s' already exists"
+	dbNotExistError = "database '%s' does not exist"
 )
 
 // DBManager is the interface for any DB manager instances
