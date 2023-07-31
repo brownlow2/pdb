@@ -186,7 +186,8 @@ func TestDBAddRow(t *testing.T) {
 
 	row := &Row{
 		RowMap: map[HeaderI]ValueI{
-			&Header{"Key", false, VALUE_STRING}:   &Value{"key value"},
+			&Header{"Key", false, VALUE_STRING}: &Value{"key value"},
+			// This header's KeyHeader value is intentionally set to true
 			&Header{"NotKey", true, VALUE_NUMBER}: &Value{"not key value"},
 		},
 	}
@@ -358,4 +359,33 @@ func TestDBGetRowsFromHeaderAndValue(t *testing.T) {
 	rows, err = db.GetRowsFromHeaderAndValue("Not Exist", "")
 	assert.Error(t, err)
 	assert.Nil(t, rows)
+}
+
+func TestRemoveRow(t *testing.T) {
+	db := &DBImpl{
+		Name:      "Test",
+		KeyHeader: "Key",
+		Headers: map[HeaderI]struct{}{
+			&Header{"Key", true, VALUE_STRING}:     struct{}{},
+			&Header{"NotKey", false, VALUE_NUMBER}: struct{}{},
+		},
+		Rows: &Rows{
+			Items: []RowI{
+				&Row{
+					RowMap: map[HeaderI]ValueI{
+						&Header{"Key", true, VALUE_STRING}:     &Value{"key value"},
+						&Header{"NotKey", false, VALUE_NUMBER}: &Value{"not key value"},
+					},
+				},
+			},
+		},
+	}
+
+	err := db.RemoveRow("")
+	assert.Error(t, err)
+	assert.Equal(t, 1, len(db.GetRows()))
+
+	err = db.RemoveRow("key value")
+	assert.Nil(t, err)
+	assert.Equal(t, 0, len(db.GetRows()))
 }

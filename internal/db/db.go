@@ -107,6 +107,15 @@ func (db *DBImpl) AddRow(row RowI) error {
 	return nil
 }
 
+func (db *DBImpl) RemoveRow(keyValue string) error {
+	if keyValue == "" {
+		return errors.New(keyValueEmptyError)
+	}
+
+	db.Rows.DeleteRowWithValue(keyValue)
+	return nil
+}
+
 func (db *DBImpl) verifyHeaders(row RowI) error {
 	// Verify that no extra headers exist in row, and if any are missing add them
 	// as new empty values
