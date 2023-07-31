@@ -42,3 +42,17 @@ func TestIsKeyHeader(t *testing.T) {
 	h = &Header{KeyHeader: false}
 	assert.False(t, h.IsKeyHeader())
 }
+
+func TestNumber(t *testing.T) {
+	h := &Header{"Test", true, VALUE_STRING}
+	v := &Value{"Not a number"}
+	f, err := h.Number(v)
+	assert.Error(t, err)
+	assert.Equal(t, 0.0, f)
+
+	h = &Header{"Test", true, VALUE_NUMBER}
+	v = &Value{"3.14"}
+	f, err = h.Number(v)
+	assert.Nil(t, err)
+	assert.Equal(t, 3.14, f)
+}

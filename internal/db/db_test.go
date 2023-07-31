@@ -389,3 +389,60 @@ func TestRemoveRow(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, 0, len(db.GetRows()))
 }
+
+func TestGetRowsFromHeaderAndValueNumberOperation(t *testing.T) {
+	db := &DBImpl{
+		Name:      "Test",
+		KeyHeader: "Key",
+		Headers: map[HeaderI]struct{}{
+			&Header{"Key", true, VALUE_STRING}:     struct{}{},
+			&Header{"NotKey", false, VALUE_NUMBER}: struct{}{},
+		},
+		Rows: &Rows{
+			Items: []RowI{
+				&Row{
+					RowMap: map[HeaderI]ValueI{
+						&Header{"Key", true, VALUE_STRING}:     &Value{"key value"},
+						&Header{"NotKey", false, VALUE_NUMBER}: &Value{"3.4"},
+					},
+				},
+				&Row{
+					RowMap: map[HeaderI]ValueI{
+						&Header{"Key", true, VALUE_STRING}:     &Value{"diff key value"},
+						&Header{"NotKey", false, VALUE_NUMBER}: &Value{"5.0"},
+					},
+				},
+				&Row{
+					RowMap: map[HeaderI]ValueI{
+						&Header{"Key", true, VALUE_STRING}:     &Value{"also key value"},
+						&Header{"NotKey", false, VALUE_NUMBER}: &Value{"2"},
+					},
+				},
+			},
+		},
+	}
+
+	rows, err := db.GetRowsFromHeaderAndValueNumberOperation("NotKey", "4.0", "<")
+	assert.Nil(t, err)
+	assert.Equal(t, 2, len(rows))
+
+	rows, err = db.GetRowsFromHeaderAndValueNumberOperation("Key", "not number", "<")
+	assert.Error(t, err)
+	assert.Nil(t, rows)
+
+	rows, err = db.GetRowsFromHeaderAndValueNumberOperation("NotKey", "4", "<")
+	assert.Nil(t, err)
+	assert.Equal(t, 2, len(rows))
+
+	rows, err = db.GetRowsFromHeaderAndValueNumberOperation("NotAKey", "not number", "<")
+	assert.Error(t, err)
+	assert.Nil(t, rows)
+
+	rows, err = db.GetRowsFromHeaderAndValueNumberOperation("NotKey", "2.1", ">")
+	assert.Nil(t, err)
+	assert.Equal(t, 2, len(rows))
+
+	rows, err = db.GetRowsFromHeaderAndValueNumberOperation("NotKey", "1.9", ">")
+	assert.Nil(t, err)
+	assert.Equal(t, 3, len(rows))
+}

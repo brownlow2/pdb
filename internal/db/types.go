@@ -8,12 +8,16 @@ var (
 	deleteKeyHeaderError        = "cannot delete key header '%s'"
 	keyHeaderValueExistsError   = "row with key header '%s' and value '%s' already exists"
 	keyValueEmptyError          = "key value cannot be empty"
+	notANumberError             = "value %s is not a number"
 )
 
 // DB is the interface for any DB implementations
 type DB interface {
 	// Returns the name of the DB
 	GetName() string
+
+	// Returns the header struct of a given header string
+	GetHeader(header string) HeaderI
 
 	// Returns the headers of the DB as their structs
 	GetHeaders() []HeaderI
@@ -51,6 +55,12 @@ type DB interface {
 	// Returns a list of the rows that have header == value
 	// Returns an error if the header doesn't exist
 	GetRowsFromHeaderAndValue(header string, value string) ([]RowI, error)
+
+	// Returns a list of rows that have header == value and header's value < op > value
+	// Op can be either '<' or '>'
+	// Returns error if the value given is not a number
+	// Returns error if the header does not exists
+	GetRowsFromHeaderAndValueNumberOperation(header string, value string, op string) ([]RowI, error)
 }
 
 // The implementation for DB holding the following fields:
@@ -164,6 +174,10 @@ type HeaderI interface {
 
 	// Returns true if the header has been assigned the KeyHeader role
 	IsKeyHeader() bool
+
+	// Returns a float64 of the given value
+	// Returns an error if the header is not a number value
+	Number(value ValueI) (float64, error)
 }
 
 // The implementation of a header holding the following fields:
