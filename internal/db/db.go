@@ -3,6 +3,7 @@ package db
 import (
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 func New(name string, headers []HeaderI, keyHeader string) (*DBImpl, error) {
@@ -24,6 +25,16 @@ func New(name string, headers []HeaderI, keyHeader string) (*DBImpl, error) {
 
 func (db *DBImpl) GetName() string {
 	return db.Name
+}
+
+func (db *DBImpl) GetHeader(header string) HeaderI {
+	for h := range db.Headers {
+		if h.GetName() == header {
+			return h
+		}
+	}
+
+	return &Header{}
 }
 
 func (db *DBImpl) GetHeaders() []HeaderI {
@@ -177,4 +188,34 @@ func (db *DBImpl) GetRowsFromHeaderAndValue(header string, value string) ([]RowI
 	return rows, nil
 }
 
-// TODO: add GetRowsFromHeaderAndValueLessThan
+func (db *DBImpl) GetRowsFromHeaderAndValueNumberOperation(header string, value string, op string) ([]RowI, error) {
+	valueF, err := strconv.ParseFloat(value, 64)
+	if err != nil {
+		return nil, errors.New(fmt.Sprintf(notANumberError, value))
+	}
+
+	if !db.headerExists(header) {
+		return nil, errors.New(fmt.Sprintf(headerNotExistError, header))
+	}
+
+	h := db.GetHeader(header)
+	rows := make([]RowI, 0)
+	for _, row := range db.GetRows() {
+		// Don't need to check error, header definitely exists
+		v, _ := row.GetValueFromHeader(header)
+		vF, err := h.Number(v)
+		if err != nil {
+			return nil, err
+		}
+
+		if op == "<" && vF < valueF {
+			rows = append(rows, row)
+		}
+
+		if op == ">" && vF > valueF {
+			rows = append(rows, row)
+		}
+	}
+
+	return rows, nil
+}
