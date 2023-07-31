@@ -53,8 +53,8 @@ func TestDeleteRow(t *testing.T) {
 	rows, _, _ := createRows()
 	r := &Row{
 		RowMap: map[HeaderI]ValueI{
-			&Header{"Key", true, VALUE_STRING}:    &Value{"diff key value"},
-			&Header{"NotKey", true, VALUE_STRING}: &Value{"diff not key value"},
+			&Header{"Key", true, VALUE_STRING}:     &Value{"diff key value"},
+			&Header{"NotKey", false, VALUE_STRING}: &Value{"diff not key value"},
 		},
 	}
 	err := rows.AddRow(r)
@@ -78,8 +78,8 @@ func TestAddValueToRowWithKeyHeader(t *testing.T) {
 	rows, _, _ := createRows()
 	r := &Row{
 		RowMap: map[HeaderI]ValueI{
-			&Header{"Key", true, VALUE_STRING}:    &Value{"diff key value"},
-			&Header{"NotKey", true, VALUE_STRING}: &Value{"diff not key value"},
+			&Header{"Key", true, VALUE_STRING}:     &Value{"diff key value"},
+			&Header{"NotKey", false, VALUE_STRING}: &Value{"diff not key value"},
 		},
 	}
 	err := rows.AddRow(r)
@@ -118,8 +118,8 @@ func TestGetRowsFromHeaderAndValue(t *testing.T) {
 
 	newRow := &Row{
 		RowMap: map[HeaderI]ValueI{
-			&Header{"Key", true, VALUE_STRING}:    &Value{"diff key value"},
-			&Header{"NotKey", true, VALUE_STRING}: &Value{""},
+			&Header{"Key", true, VALUE_STRING}:     &Value{"diff key value"},
+			&Header{"NotKey", false, VALUE_STRING}: &Value{""},
 		},
 	}
 	err = rows.AddRow(newRow)
@@ -128,4 +128,26 @@ func TestGetRowsFromHeaderAndValue(t *testing.T) {
 	r, err = rows.GetRowsFromHeaderAndValue("NotKey", "")
 	assert.Nil(t, err)
 	assert.Equal(t, 2, len(r))
+}
+
+func TestDeleteRowsWithValue(t *testing.T) {
+	rows, _, _ := createRows()
+	r := &Row{
+		RowMap: map[HeaderI]ValueI{
+			&Header{"Key", true, VALUE_STRING}:     &Value{"diff key value"},
+			&Header{"NotKey", false, VALUE_STRING}: &Value{"diff not key value"},
+		},
+	}
+	err := rows.AddRow(r)
+	assert.Nil(t, err)
+	assert.Equal(t, 2, len(rows.GetRows()))
+
+	rows.DeleteRowWithValue("diff not key value")
+	assert.Equal(t, 2, len(rows.GetRows()))
+
+	rows.DeleteRowWithValue("key value")
+	assert.Equal(t, 1, len(rows.GetRows()))
+
+	rows.DeleteRowWithValue("diff key value")
+	assert.Equal(t, 0, len(rows.GetRows()))
 }

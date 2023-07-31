@@ -32,6 +32,15 @@ func (r *Rows) DeleteRow(row RowI) {
 	}
 }
 
+func (r *Rows) DeleteRowWithValue(keyValue string) {
+	for i, row := range r.Items {
+		_, val := row.GetKeyHeaderAndValue()
+		if val.GetValue() == keyValue {
+			r.Items = append(r.Items[:i], r.Items[i+1:]...)
+		}
+	}
+}
+
 func (r *Rows) RemoveHeader(header string) {
 	for _, row := range r.Items {
 		row.RemoveHeader(header)

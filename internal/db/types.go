@@ -7,6 +7,7 @@ var (
 	keyHeaderAlreadyExistsError = "key header already exists"
 	deleteKeyHeaderError        = "cannot delete key header '%s'"
 	keyHeaderValueExistsError   = "row with key header '%s' and value '%s' already exists"
+	keyValueEmptyError          = "key value cannot be empty"
 )
 
 // DB is the interface for any DB implementations
@@ -14,8 +15,10 @@ type DB interface {
 	// Returns the name of the DB
 	GetName() string
 
+	// Returns the headers of the DB as their structs
 	GetHeaders() []HeaderI
 
+	// Returns the headers of the DB as a list of strings
 	GetHeadersString() []string
 
 	// Returns the KeyHeader for the DB
@@ -69,6 +72,9 @@ type RowsI interface {
 
 	// Deletes a row from the DB based on the rows KeyHeader value
 	DeleteRow(row RowI)
+
+	// Deletes a row from the DB using the key header's value
+	DeleteRowWithValue(keyValue string)
 
 	// Removes the given header from each of the rows
 	RemoveHeader(header string)
