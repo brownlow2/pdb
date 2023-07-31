@@ -34,6 +34,10 @@ type DB interface {
 	// being added, AddRow() returns an error
 	AddRow(row RowI) error
 
+	// Removes a row from the DB based on the key header's value
+	// Returns an error if the value is an empty string
+	RemoveRow(keyValue string) error
+
 	// Returns all rows in the DB
 	GetRows() []RowI
 
