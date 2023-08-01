@@ -7,17 +7,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func createRow() (RowI, map[HeaderI]ValueI) {
-	rowMap := map[HeaderI]ValueI{
-		&Header{"Key", true, VALUE_STRING}:     &Value{"key value"},
-		&Header{"NotKey", false, VALUE_NUMBER}: &Value{""},
-	}
-
-	return &Row{
-		rowMap,
-	}, rowMap
-}
-
 func TestGetKeyHeaderAndValue(t *testing.T) {
 	row, _ := createRow()
 

@@ -264,29 +264,6 @@ func TestVerifyHeaders(t *testing.T) {
 	assert.Equal(t, 2, len(row.GetRowMap()))
 }
 
-func newDBWithValues() (*DBImpl, []RowI) {
-	rows := &Rows{
-		Items: []RowI{
-			&Row{
-				RowMap: map[HeaderI]ValueI{
-					&Header{"Title", true, VALUE_STRING}:  &Value{"test"},
-					&Header{"Value", false, VALUE_STRING}: &Value{"test2"},
-				},
-			},
-		},
-	}
-	db := &DBImpl{
-		Name:      "test",
-		KeyHeader: "Title",
-		Headers: map[HeaderI]struct{}{
-			&Header{"Title", true, VALUE_STRING}:  struct{}{},
-			&Header{"Value", false, VALUE_STRING}: struct{}{},
-		},
-		Rows: rows,
-	}
-	return db, rows.Items
-}
-
 func TestDBGetRows(t *testing.T) {
 	db, rows := newDBWithValues()
 

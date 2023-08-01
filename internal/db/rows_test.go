@@ -7,15 +7,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func createRows() (RowsI, RowI, map[HeaderI]ValueI) {
-	row, rowMap := createRow()
-	rows := &Rows{
-		Items: []RowI{row},
-	}
-
-	return rows, row, rowMap
-}
-
 func TestGetRows(t *testing.T) {
 	rows, row, _ := createRows()
 
